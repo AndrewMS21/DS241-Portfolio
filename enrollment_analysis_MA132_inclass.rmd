@@ -1,0 +1,74 @@
+---
+title: "Class enrollment Data:MA132"
+author: "Andrew Stephens"
+Date: "21 Sep 2020"
+output: html_notebook
+---
+
+The intention of this analysis is to use past enrollment data to predict total enrollment in MA132. 
+
+
+Prepare workspace:
+
+## Load Packages
+```{r}
+library(tidyverse)
+library(janitor)
+library(readxl)
+library(skimr)
+library(summarytools)
+
+```
+
+
+## Read and clean the data
+
+```{r}
+dfa = read_excel("~/DS241/CU_ACAD_DEPT_ENRL (1).xlsx") %>%
+  clean_names()
+```
+
+```{r}
+skim(dfa)
+```
+
+### Tidy data
+
+Let's separate column term2 into two variables.
+
+```{r}
+dfb = dfa %>% separate(col=term2, into=c("semester", "year"), sep=" ")
+```
+
+### Clean and subset the data
+
+We get rid of the following variables:
+
+* acad_org
+* current_status
+* instructor
+* course_id
+
+Filtering to only include:
+
+* math courses
+* catalog numbers for MA131 and 132
+* lectures
+
+Use distinct to remove duplicate rows
+
+Summarize enrollment
+
+```{r}
+dfc=dfb %>% select(-acad_org,-current_status,-instructor,-course_id)%>%
+  filter(subject=="MA") %>%
+  filter(catalog %in% c("131","132")) %>%
+  filter(component=="LEC") %>%
+  distinct() %>%
+  group_by(catalog,semester,year) %>%
+  summarise(combined_tot_enrl=sum(tot_enrl))
+  
+```
+
+
+
